@@ -1,0 +1,98 @@
+# DemandIQ Master Configuration
+
+data:
+  source: 'kaggle'            # kaggle | csv | synthetic
+  dataset_name: 'm5-forecasting-accuracy'
+  csv_path: null              # used when source == csv (long format: date, series_id, sales)
+  date_column: 'date'
+  target_column: 'sales'
+  granularity: 'auto'         # auto-detect from data
+  n_series: 10                # top-N series by total sales (M5 has 30k; keep training <15 min)
+
+forecasting:
+  forecast_horizon: 30
+  train_test_split: [0.8, 0.1, 0.1]
+  cv_folds: 3
+  cv_strategy: 'time_series_walk_forward'
+
+features:
+  lag_lookbacks: [1, 7, 14, 30, 60]
+  rolling_windows: [7, 14, 30]
+  include_temporal: true
+  include_decomposition: true
+  include_business_features: true
+  include_hierarchical: true
+  holiday_country: 'US'
+
+models:
+  moving_average:
+    enabled: true
+    windows: [7, 14, 30]
+  linear_regression:
+    enabled: true
+  lightgbm:
+    enabled: true
+    learning_rate: 0.05
+    num_leaves: 31
+    max_depth: 7
+    n_estimators: 500
+    min_child_samples: 20
+    subsample: 0.8
+    colsample_bytree: 0.8
+  xgboost:
+    enabled: true
+    learning_rate: 0.1
+    max_depth: 6
+    n_estimators: 500
+    subsample: 0.8
+    colsample_bytree: 0.8
+  random_forest:
+    enabled: true
+    n_estimators: 100
+    max_depth: 15
+    min_samples_split: 5
+  arima:
+    enabled: true
+    auto_order: true          # small AIC grid search
+    seasonal: false
+  exponential_smoothing:
+    enabled: false
+  lstm:
+    enabled: true
+    input_sequence_length: 60
+    lstm_units: [64, 32]
+    dropout: 0.2
+    batch_size: 32
+    epochs: 30
+    learning_rate: 0.001
+
+mlflow:
+  enabled: true
+  tracking_uri: 'sqlite:///mlflow.db'
+  experiment_name: 'DemandIQ-M5'
+  registry_model_name: 'DemandIQ_Demand_Forecast_Model'
+  promotion_improvement_threshold: 0.02   # 2% MAPE improvement to promote
+  run_tags:
+    environment: 'development'
+    project: 'demand_forecasting'
+
+drift_detection:
+  enabled: true
+  framework: 'evidently'      # evidently html report if importable; KS core always runs
+  statistical_test: 'ks'
+  p_value_threshold: 0.05
+  features_to_monitor: 5      # top-N by importance
+  recent_window_days: 30
+
+retraining:
+  trigger_mode: 'manual'      # manual | automatic | hybrid
+  mape_degradation_threshold: 0.15
+  drift_feature_count_trigger: 3
+  check_frequency_days: 7
+
+logging:
+  level: 'INFO'
+  log_file: 'logs/demandiq.log'
+  log_format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+random_seed: 42

@@ -1,0 +1,23 @@
+# data & artifacts
+data/raw/
+data/processed/
+models/
+mlruns/
+mlflow.db
+logs/
+reports/
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# env
+.env
+.kaggle/
+
+# frontend
+frontend/node_modules/
+frontend/dist/
