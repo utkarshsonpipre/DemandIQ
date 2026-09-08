@@ -1,7 +1,7 @@
 # data & artifacts
 data/raw/
 data/processed/
-models/
+/models/
 mlruns/
 mlflow.db
 logs/
